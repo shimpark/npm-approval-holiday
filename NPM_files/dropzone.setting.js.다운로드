@@ -1,0 +1,446 @@
+﻿/*=======================================
+    2016-01-29
+    key724
+    파일업로드 기본 셋팅 스크립트
+========================================*/
+//var Univ_Dropzone_Setting = {
+//    FormObj  : "#form1",              //document 안의 form 객체 (추가)
+//    UploadObj: "div#myDropzone",      //첨부파일 객체
+//    IDObj: "#ID",                     //게시물ID
+//    CategoryIDObj : "#CategoryID",    //카테고리ID
+//    TempGuidObj: "#TempGuid",         //GUID 객체
+//    UploadUrl: "",                    //업로드 경로
+//    RemoveUrl: "",                    //삭제 경로 (사용하지 않음)
+//    GetListUrl: "",                   //첨부 리스트 경로
+//    MaxFiles: 2,                      //첨부파일 갯수 or null (무제한)
+//    MaxFilesize: 256,                 //업로드 최대용량 (단위 MB)
+//    AcceptedFiles: null               //mime타입이나 확장자 eg. "image/*,application/pdf,.docx"
+//}
+
+var myDropzone;
+Dropzone.autoDiscover = false; //Dropzone 자체 버그 패치
+
+$(document).ready(function () {
+    myDropzone = new Dropzone(Univ_Dropzone_Setting.UploadObj, {
+        url: Univ_Dropzone_Setting.UploadUrl,
+        maxFiles: Univ_Dropzone_Setting.MaxFiles,
+        maxFilesize: Univ_Dropzone_Setting.MaxFilesize,
+        addRemoveLinks: true,           //파일삭제/취소 버튼 추가 유무
+        clickable: true,                //클릭해서 파일 첨부를 원할 경우 true
+        acceptedFiles: Univ_Dropzone_Setting.AcceptedFiles,
+        //forceFallback : true,           // 테스트용. dropzone 지원하지 않을 경우 fallback 테스트 할 경우 true로 지정
+        paramName: "uploadfile",
+
+        //미리보기
+        previewsContainer: null,       //미리보기(썸네일 표기) 객체명 or null (null 이면 dropzone-previews 사용)
+        previewTemplate: "<div class=\"dz-preview dz-file-preview\">\n  <div class=\"dz-image\"><img data-dz-thumbnail /></div>\n  <div class=\"dz-details\">\n    <div class=\"dz-size\"><span data-dz-size></span></div>\n    <div class=\"dz-filename\"><span data-dz-name></span></div>\n  </div>\n  <div class=\"dz-progress\"><span class=\"dz-upload\" data-dz-uploadprogress></span></div>\n  <div class=\"dz-error-message\"><span data-dz-errormessage></span></div>\n  <div class=\"dz-success-mark\">\n    <svg width=\"54px\" height=\"54px\" viewBox=\"0 0 54 54\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\">\n      <title>Check</title>\n      <defs></defs>\n      <g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\">\n        <path d=\"M23.5,31.8431458 L17.5852419,25.9283877 C16.0248253,24.3679711 13.4910294,24.366835 11.9289322,25.9289322 C10.3700136,27.4878508 10.3665912,30.0234455 11.9283877,31.5852419 L20.4147581,40.0716123 C20.5133999,40.1702541 20.6159315,40.2626649 20.7218615,40.3488435 C22.2835669,41.8725651 24.794234,41.8626202 26.3461564,40.3106978 L43.3106978,23.3461564 C44.8771021,21.7797521 44.8758057,19.2483887 43.3137085,17.6862915 C41.7547899,16.1273729 39.2176035,16.1255422 37.6538436,17.6893022 L23.5,31.8431458 Z M27,53 C41.3594035,53 53,41.3594035 53,27 C53,12.6405965 41.3594035,1 27,1 C12.6405965,1 1,12.6405965 1,27 C1,41.3594035 12.6405965,53 27,53 Z\" id=\"Oval-2\" stroke-opacity=\"0.198794158\" stroke=\"#747474\" fill-opacity=\"0.816519475\" fill=\"#FFFFFF\" sketch:type=\"MSShapeGroup\"></path>\n      </g>\n    </svg>\n  </div>\n  <div class=\"dz-error-mark\">\n    <svg width=\"54px\" height=\"54px\" viewBox=\"0 0 54 54\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\">\n      <title>Error</title>\n      <defs></defs>\n      <g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\">\n        <g id=\"Check-+-Oval-2\" sketch:type=\"MSLayerGroup\" stroke=\"#747474\" stroke-opacity=\"0.198794158\" fill=\"#FFFFFF\" fill-opacity=\"0.816519475\">\n          <path d=\"M32.6568542,29 L38.3106978,23.3461564 C39.8771021,21.7797521 39.8758057,19.2483887 38.3137085,17.6862915 C36.7547899,16.1273729 34.2176035,16.1255422 32.6538436,17.6893022 L27,23.3431458 L21.3461564,17.6893022 C19.7823965,16.1255422 17.2452101,16.1273729 15.6862915,17.6862915 C14.1241943,19.2483887 14.1228979,21.7797521 15.6893022,23.3461564 L21.3431458,29 L15.6893022,34.6538436 C14.1228979,36.2202479 14.1241943,38.7516113 15.6862915,40.3137085 C17.2452101,41.8726271 19.7823965,41.8744578 21.3461564,40.3106978 L27,34.6568542 L32.6538436,40.3106978 C34.2176035,41.8744578 36.7547899,41.8726271 38.3137085,40.3137085 C39.8758057,38.7516113 39.8771021,36.2202479 38.3106978,34.6538436 L32.6568542,29 Z M27,53 C41.3594035,53 53,41.3594035 53,27 C53,12.6405965 41.3594035,1 27,1 C12.6405965,1 1,12.6405965 1,27 C1,41.3594035 12.6405965,53 27,53 Z\" id=\"Oval-2\" sketch:type=\"MSShapeGroup\"></path>\n        </g>\n      </g>\n    </svg>\n  </div>\n</div>",
+        createImageThumbnails: true,
+        maxThumbnailFilesize: 10,       //단위 MB
+        thumbnailWidth: 120,            //썸네일 너비 or null (null이면 비율에 맞게 조정됨)
+        thumbnailHeight: 120,           //썸네일 높이 or null (null이면 크기변경되지 않음)
+
+        //문구
+        dictDefaultMessage: "<i class='fa fa-upload'></i> 업로드 할 파일을 이곳에 올려놓거나 클릭하여 파일을 선택하시기 바랍니다.</h1>",
+        dictFallbackMessage: "이 브라우저는 파일을 끌어당겨 첨부할 수 없습니다.(파일선택을 클릭하여 업로드 하시기 바랍니다.)",
+        dictFallbackText: "아래 파일 선택을 클릭하여 파일을 첨부하시기 바랍니다..",
+        dictFileTooBig: "파일 용량을 초과하였습니다. ({{filesize}}MiB). 최대 파일용량: {{maxFilesize}}MiB.",
+        dictInvalidFileType: "이 타입의 파일은 업로드가 불가능 합니다.",
+        dictResponseError: "서버에서 오류가 발생하였습니다. (code : {{statusCode}})",
+        dictCancelUpload: "업로드 취소",
+        dictCancelUploadConfirmation: "업로드를 취소하시겠습니까?\n확인을 클릭하시면 바로 삭제 됩니다.",
+        dictRemoveFile: "파일삭제",
+        dictMaxFilesExceeded: "더이상 파일을 추가 할 수 없습니다.",
+
+        //Event
+        //Dropzone 미지원 시 처리 - fallback
+        fallback: function () { //Dropzone 미지원 시 처리
+            //초기화
+            var _this = this;
+            $(Univ_Dropzone_Setting.UploadObj).find(".fallback").append("<input type='hidden' name='FallbackModeFileInputName' value='" + _this.options.paramName + "'/>");
+            $(Univ_Dropzone_Setting.UploadObj).find("table.dropzone-fallback-fileList").append("<tr>" +
+                          "   <td><input type='file' name='" + _this.options.paramName + "' />" +
+                          "   <td class='dropzone-fallback-upload-status text-left'></td>" +
+                          "</tr>");
+            var obj = $("input[name=" + _this.options.paramName + "]");
+            DropzoneFallbackModeMakeIframe(obj);
+
+            //수정모드 - 첨부파일 표기
+            if ($(Univ_Dropzone_Setting.IDObj).val() != "" && $(Univ_Dropzone_Setting.IDObj).val() != "0") { //수정모드 - 첨부파일 표기
+                var id = $(Univ_Dropzone_Setting.IDObj).val();
+                var categoryID = 0;
+                if ($(Univ_Dropzone_Setting.CategoryIDObj).length > 0) {
+                    categoryID = $(Univ_Dropzone_Setting.CategoryIDObj).val();
+                }
+
+                var requJson = {
+                    "ID": id,
+                    "CategoryID": categoryID
+                }
+
+                $.post(Univ_Dropzone_Setting.GetListUrl, { p: GetJsonToEncParam(requJson) }, function (data) {
+                    var files = JSON.parse(data);
+                    for (var i = 0; i < files.length; i++) {
+                        $(Univ_Dropzone_Setting.UploadObj).find("table.dropzone-fallback-fileList").append("<tr>" +
+                               "   <td><input type='file' name='" + _this.options.paramName + "' style='display:none' />" +
+                               "       <input type='hidden' name='AttachFileID' value='" + files[i].AttachFileID + "'/>" +
+                               "       <input type='hidden' name='FileFullPath' value='" + files[i].FilePath + files[i].FileGUID + "'/>" + files[i].FileName + "</td>" +
+                               "   <td><button type='button' class='btn btn-danger btn-xs dropzone-fallback-fileDel'>삭제</button></td>" +
+                               "</tr>");
+                    }
+                    $(".dropzone-fallback-fileDel").on("click", function (e) {
+                        e.preventDefault();
+
+                        var attachFileID = $(this).parent("td").parent("tr").find("input[name=AttachFileID]").val();
+                        var fileFullPath = $(this).parent("td").parent("tr").find("input[name=FileFullPath]").val();
+
+                        if ($(Univ_Dropzone_Setting.FormObj).length == 0) {
+                            var form = $("<form />",
+                                        {
+                                            id: 'formDropZone'
+                                            , name: 'formDropZone'
+                                            , method: 'post'
+                                            , action: Univ_Dropzone_Setting.RemoveUrl
+                                        }
+                                   );
+
+                            $("body").append(form);
+                            Univ_Dropzone_Setting.FormObj = '#formDropZone';
+                        }
+
+                        $(Univ_Dropzone_Setting.FormObj).append($("<input />", { type: 'hidden', name: 'DeleteAttachFileID', value: attachFileID }));
+                        $(Univ_Dropzone_Setting.FormObj).append($("<input />", { type: 'hidden', name: 'DeleteFileFullPath', value: fileFullPath }));
+
+                        $(this).parent("td").parent("tr").remove();
+                    });
+                }, "json");
+            }//수정모드 - 첨부파일 표기
+        },
+        //Dropzone 일반
+        init: function () {
+            var _this = this;
+
+            if ($(Univ_Dropzone_Setting.IDObj).val() != "" && $(Univ_Dropzone_Setting.IDObj).val() != "0") { //수정모드 - 첨부파일 표기
+                var id = $(Univ_Dropzone_Setting.IDObj).val();
+                var categoryID = 0;
+                if ($(Univ_Dropzone_Setting.CategoryIDObj).length > 0) {
+                    categoryID = $(Univ_Dropzone_Setting.CategoryIDObj).val();
+                }
+
+                var requJson = {
+                    "ID": id,
+                    "CategoryID": categoryID
+                }
+
+                $.post(Univ_Dropzone_Setting.GetListUrl, { p: GetJsonToEncParam(requJson) }, function (data) {
+                    var files = $.parseJSON(data);
+                    for (var i = 0; i < files.length; i++) {
+                        var mockFile = {
+                            name: files[i].FileName,
+                            size: files[i].FileLength,
+                            type: files[i].FileType,
+                            status: "added",
+                            accepted: true
+                        };
+
+                        //aws 로 수정처리 - start
+                        var path = files[i].FilePath + files[i].FileGUID;
+                        if (files[i].FilePathS3 != "") {
+                            path = files[i].FilePathS3;
+                        }
+
+                        _this.createThumbnailFromUrl(mockFile, path, null, "Anonymous");
+                        //aws 로 수정처리 - end
+
+                        _this.emit("addedfile", mockFile);
+                        _this.emit("complete", mockFile);
+                        _this.files.push(mockFile);
+
+                        $(mockFile.previewElement).find("input[name=AttachFileID]").val(files[i].AttachFileID);
+                        $(mockFile.previewElement).find("input[name=FileFullPath]").val(files[i].FilePath + files[i].FileGUID);
+                    }
+                }, "json");
+            }
+
+            _this.on("addedfile", function (file) {
+                $(file.previewElement).append("<input type=\"hidden\" name=\"AttachFileID\" value=\"" + "" + "\" />");
+                $(file.previewElement).append("<input type=\"hidden\" name=\"FileFullPath\" value=\"" + "" + "\" />");
+            }); //addedfile
+
+            _this.on("sending", function (file, xhr, formData) {
+                var requJson = {
+                    "TempGuid": $(Univ_Dropzone_Setting.TempGuidObj).val()
+                  , "AcceptedFiles": (Univ_Dropzone_Setting.AcceptedFiles == null ? "" : Univ_Dropzone_Setting.AcceptedFiles)
+                  , "FallBack": "N"
+                }
+                formData.append("p", GetJsonToEncParam(requJson));
+            }); //sending
+
+            _this.on("success", function (file, xhr, ex) {
+                if (xhr.success) {
+                    $(file.previewElement).find("input[name=AttachFileID]").val(xhr.AttachFileID);
+                    $(file.previewElement).find("input[name=FileFullPath]").val(xhr.FileFullPath);
+                } else {
+                    alert("파일을 업로드 하는 도중 오류가 발생하였습니다.");
+                    _this.removeFile(file);
+                }
+            }); //success
+
+            _this.on("removedfile", function (file) {
+                var attachFileID = $(file.previewElement).find("input[name=AttachFileID]").val();
+                var fileFullPath = $(file.previewElement).find("input[name=FileFullPath]").val();
+
+                if ($(Univ_Dropzone_Setting.FormObj).length == 0) {
+                    var form = $("<form />",
+                                {
+                                    id: 'formDropZone'
+                                    , name: 'formDropZone'
+                                    , method: 'post'
+                                    , action: Univ_Dropzone_Setting.RemoveUrl
+                                }
+                           );
+
+                    $("body").append(form);
+                    Univ_Dropzone_Setting.FormObj = '#formDropZone';
+                }
+
+                $(Univ_Dropzone_Setting.FormObj).append($("<input />", { type: 'hidden', name: 'DeleteAttachFileID', value: attachFileID }));
+                $(Univ_Dropzone_Setting.FormObj).append($("<input />", { type: 'hidden', name: 'DeleteFileFullPath', value: fileFullPath }));
+            }); //removedfile
+
+            _this.on("maxfilesreached", function (files) {
+                for (var i = 0; i < files.length; i++) {
+                    if (files[i].status == "error") {
+                        alert(_this.options.dictMaxFilesExceeded);
+                        _this.removeFile(files[i]);
+                    }
+                }
+            });//maxfilesreached
+        } //init
+    }); //Dropzone Option
+}); //ready
+
+//파일 갯수 가져오기
+function DropzoneAttachFileCount() {
+    return myDropzone.files.length;
+}
+
+//Fallback mode 에서 파일 업로드 진행
+function DropzoneFallbackModeMakeIframe(obj) {
+    var interval;
+    $(obj).AjaxFileUpload({
+        action: Univ_Dropzone_Setting.UploadUrl,
+        onChange: function (filename) {
+            var $status = $(".dropzone-fallback-upload-status")
+                .text("Uploading");
+
+            interval = window.setInterval(function () {
+                var text = $status.text();
+                if (text.length < 13) {
+                    $status.text(text + ".");
+                } else {
+                    $status.text("Uploading");
+                }
+            }, 200);
+        },
+        onSubmit: function (filename) {
+            if (Univ_Dropzone_Setting.MaxFiles != null && $("input[name=AttachFileID]").length >= Univ_Dropzone_Setting.MaxFiles) {
+                alert("더이상 파일을 추가할 수 없습니다. (최대 : " + Univ_Dropzone_Setting.MaxFiles + "개)");
+                return false;
+            }
+            else {
+                var requJson = {
+                    "TempGuid": $(Univ_Dropzone_Setting.TempGuidObj).val()
+                   , "AcceptedFiles": (Univ_Dropzone_Setting.AcceptedFiles == null ? "" : Univ_Dropzone_Setting.AcceptedFiles)
+                   , "FallBack": "Y"
+                };
+
+                var data = { p: GetJsonToEncParam(requJson) };
+                return data;
+            }
+        },
+        onComplete: function (filename, response, data) {
+            if (response) {
+                $(".dropzone-fallback-upload-status").text("");
+
+                if (response.success) {
+                    window.clearInterval(interval);
+                    $(".dropzone-fallback-upload-status").html("");
+
+                    $(Univ_Dropzone_Setting.UploadObj).find("table.dropzone-fallback-fileList").append("<tr>" +
+                    "   <td><input type='hidden' name='AttachFileID' value='" + response.AttachFileID + "'/>" +
+                    "       <input type='hidden' name='FileFullPath' value='" + response.FileFullPath + "'/>" + filename + "</td>" +
+                    "   <td><button type='button' class='btn btn-danger btn-xs dropzone-fallback-fileDel'>삭제</button></td>" +
+                    "</tr>");
+
+                    $(".dropzone-fallback-fileDel").on("click", function (e) {
+                        e.preventDefault();
+
+                        var attachFileID = $(this).parent("td").parent("tr").find("input[name=AttachFileID]").val();
+                        var fileFullPath = $(this).parent("td").parent("tr").find("input[name=FileFullPath]").val();
+
+                        if ($(Univ_Dropzone_Setting.FormObj).length == 0) {
+                            var form = $("<form />",
+                                        {
+                                            id: 'formDropZone'
+                                            , name: 'formDropZone'
+                                            , method: 'post'
+                                            , action: Univ_Dropzone_Setting.RemoveUrl
+                                        }
+                                   );
+
+                            $("body").append(form);
+                            Univ_Dropzone_Setting.FormObj = '#formDropZone';
+                        }
+
+                        $(Univ_Dropzone_Setting.FormObj).append($("<input />", { type: 'hidden', name: 'DeleteAttachFileID', value: attachFileID }));
+                        $(Univ_Dropzone_Setting.FormObj).append($("<input />", { type: 'hidden', name: 'DeleteFileFullPath', value: fileFullPath }));
+
+                        $(this).parent("td").parent("tr").remove();
+                    });
+                }
+                else {
+                    var errorMsg = "업로드 실패";
+                    //if (response.Message != undefined)
+                    //{
+                    //    errorMsg = response.Message;
+                    //}
+                    $(".dropzone-fallback-upload-status").html(errorMsg);
+                }
+            }
+        }
+    });
+}
+
+/**
+ * Fallback 모드 전용으로 사용한다.
+ * AJAX File Upload
+ * http://github.com/davgothic/AjaxFileUpload
+ * Copyright (c) 2010-2013 David Hancock (http://davidhancock.co)
+ * Thanks to Steven Barnett for his generous contributions
+ * Licensed under the MIT license ( http://www.opensource.org/licenses/MIT )
+ */
+
+; (function ($) {
+    $.fn.AjaxFileUpload = function (options) {
+        var defaults = {
+            action: "upload.php",
+            btnSubmitID: "",
+            singlefileUpload: false,
+            onChange: function (filename) { },
+            onSubmit: function (filename) { },
+            onComplete: function (filename, response) { }
+        },
+		settings = $.extend({}, defaults, options),
+		randomId = (function () {
+		    var id = Math.floor((Math.random() * ((1000 + 1) - 0)) + 0);
+		    return function () {
+		        return "_AjaxFileUpload" + id;
+		    };
+		})();
+
+        return this.each(function () {
+            var $this = $(this);
+            if ($this.is("input") && $this.attr("type") === "file") {
+                $this.bind("change", onChange);
+            }
+        });
+
+        function onChange(e) {
+            var $element = $(e.target),
+				id = $element.attr('id'),
+				$clone = $element.removeAttr('id').clone().attr('id', id).AjaxFileUpload(options),
+				filename = $element.val().replace(/.*(\/|\\)/, ""),
+				iframe = createIframe(),
+				form = createForm(iframe);
+
+            // We append a clone since the original input will be destroyed
+            $clone.insertBefore($element);
+
+            settings.onChange.call($clone[0], filename);
+
+            if (settings.btnSubmitID == "") {
+                form.append($element).bind("submit", { element: $clone, iframe: iframe, filename: filename }, onSubmit).submit();
+            }
+            else {
+                if (settings.singlefileUpload) {
+                    $clone.hide();
+                }
+
+                $("#" + settings.btnSubmitID).click(function () {
+                    iframe = createIframe();
+                    iframe.bind("load", { element: $clone, form: form, filename: filename }, onComplete);
+
+                    form.append($element).bind("submit", { element: $clone, iframe: iframe, filename: filename }, onSubmit).submit();
+
+                    if (settings.singlefileUpload) {
+                        $clone.show();
+                    }
+                });
+            }
+        }
+
+        function onSubmit(e) {
+            var data = settings.onSubmit.call(e.data.element, e.data.filename);
+
+            // If false cancel the submission
+            if (data === false) {
+                // Remove the temporary form and iframe
+                $(e.target).remove();
+                e.data.iframe.remove();
+                return false;
+            } else {
+                // Else, append additional inputs
+                for (var variable in data) {
+                    $("<input />")
+						.attr("type", "hidden")
+						.attr("name", variable)
+						.val(data[variable])
+						.appendTo(e.target);
+                }
+            }
+        }
+
+        function onComplete(e) {
+            var $iframe = $(e.target),
+				doc = ($iframe[0].contentWindow || $iframe[0].contentDocument).document,
+				response = doc.body.innerText;
+
+            //var $iframe  = $(e.target),
+            //    response = $iframe.contents().find('html').html();
+
+            if (response) {
+                response = $.parseJSON(response);
+            } else {
+                response = {};
+            }
+
+            settings.onComplete.call(e.data.element, e.data.filename, response);
+
+            e.data.form.remove();
+            $iframe.remove();
+        }
+
+        function createIframe() {
+            var id = randomId();
+
+            // The iframe must be appended as a string otherwise IE7 will pop up the response in a new window
+            // http://stackoverflow.com/a/6222471/268669
+            $("body")
+				.append('<iframe src="javascript:false;" name="' + id + '" id="' + id + '" style="display: none;"></iframe>');
+
+            return $('#' + id);
+        }
+
+        function createForm(iframe) {
+            return $("<form />")
+				.attr({
+				    method: "post",
+				    action: settings.action,
+				    enctype: "multipart/form-data",
+				    target: iframe[0].name
+				})
+				.hide()
+				.appendTo("body");
+        }
+    };
+})(jQuery);

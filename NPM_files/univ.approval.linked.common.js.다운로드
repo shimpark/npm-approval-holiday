@@ -1,0 +1,103 @@
+﻿/**********************************************************************************************
+* 전자결재 : 연동페이지 호출
+**********************************************************************************************/
+function JsApprovalCallLinked(linkedUrl, approvalStatus, paramStr, documentID) {
+
+    var p = {
+        "ApprovalStatus": approvalStatus,
+        "ParamStr": paramStr,
+        "DocumentID": documentID
+    };
+
+    var result = false;
+
+	$.ajax({
+		method: "POST",
+		url: linkedUrl,
+		data: { p : GetJsonToEncParamWithEmpty(p)},
+		cache: false,
+		async: false
+	})
+	.success(function (jsonData) {
+	    if (jsonData && jsonData.success && jsonData.success == "true") {
+	        result = true;
+		}
+		else {
+	        if (jsonData && jsonData.errorMessage)
+	        {
+	            alert(jsonData.errorMessage);
+	        }
+	        result = false;
+		}
+	})
+	.fail(function (jqXHR, textStatus) {
+	    result = false;
+	   // alert("연동 도중 오류가 발생하였습니다.-" + approvalStatus);
+	});
+
+	return result;
+
+}
+
+
+/**********************************************************************************************
+* 전자결재 : 연동페이지 호출 (데이터 리턴)
+**********************************************************************************************/
+function JsGetApprovalDataFromLinked(linkedUrl, approvalStatus, paramStr, documentID) {
+
+    var p = {
+        "ApprovalStatus": approvalStatus,
+        "ParamStr": paramStr,
+        "DocumentID": documentID
+    };
+
+    var data = null;
+    $.ajax({
+        method: "POST",
+        url: linkedUrl,
+        data: { p: GetJsonToEncParamWithEmpty(p) },
+        cache: false,
+        async: false
+    })
+	.success(function (jsonData) {
+
+	    if (jsonData && jsonData.success && jsonData.success == "true") {
+	        data = jsonData.data;
+	    }
+	})
+	.fail(function (jqXHR, textStatus) {
+	    data = null;
+	});
+
+    return data;
+}
+
+
+/**********************************************************************************************
+* 전자결재 : 연동페이지 호출 (받은 Json 모두 전달)
+**********************************************************************************************/
+function JsGetApprovalJsonFromLinked(linkedUrl, approvalStatus, paramStr, documentID) {
+
+    var p = {
+        "ApprovalStatus": approvalStatus,
+        "ParamStr": paramStr,
+        "DocumentID": documentID
+    };
+
+    var data = null;
+    $.ajax({
+        method: "POST",
+        url: linkedUrl,
+        data: { p: GetJsonToEncParamWithEmpty(p) },
+        cache: false,
+        async: false
+    })
+	.success(function (jsonData) {
+	    data = jsonData;
+	})
+	.fail(function (jqXHR, textStatus) {
+	    data = null;
+	});
+
+    return data;
+}

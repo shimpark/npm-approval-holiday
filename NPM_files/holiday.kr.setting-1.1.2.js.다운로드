@@ -1,0 +1,133 @@
+﻿/*holiday.kr.setting-1.1.2.js*/
+$(document).ready(function () {
+    //계열사 별로 공휴일달력 설정 luckshim
+    if (typeof $rootDeptID === "undefined") {
+        SetDatePicker();
+    }
+    else {
+        SetDatePicker($rootDeptID);
+    }
+
+    //Date 일련번호로 붙여넣기 시 (20171208 -> 2017-12-08)
+    $('body').on("paste", "input[data-provide=datepicker]", function (event) {
+        var pasteData = event.originalEvent.clipboardData.getData('text');
+        pasteData = $.trim(pasteData);
+
+        if (pasteData.length >= 8) {
+            return $(event.target).val(GetMultiDate2(pasteData, "ko"));
+        }
+        else if ($.trim(pasteData) == "") {
+            return $(event.target).val("");
+        }
+        else {
+            return $(event.target).val(pasteData);
+        }
+    });
+
+    //Date 일련번호로 붙여넣기 시 (20171208 -> 2017-12-08)
+    $('body').on("keyup", "input[data-provide=datepicker]", function (e) {
+        var key = e.charCode || e.keyCode || 0;
+        $date = $(this);
+
+        if (key !== 8) {
+            if ($date.val().length === 0) {
+                $date.val($date.val() + '');
+            }
+            if ($date.val().length === 4) {
+                $date.val($date.val() + '-');
+            }
+            if ($date.val().length === 7) {
+                $date.val($date.val() + '-');
+            }
+        }
+    });
+});
+
+SetDatePicker = function (rootDeptID) {
+    $.ajaxSetup({ async: true });
+    $.post("/Account/SelHoliday", {
+    }, function (result) {
+        if (rootDeptID === undefined) { rootDeptID = "0"; }
+
+        $("input[data-provide=datepicker]").datepicker({
+            language: "kr",
+            todayHighlight: true,
+            autoclose: true,
+            orientation: 'bottom',//auto
+            beforeShowDay: function (date) {
+
+                //토,일 칼라 칠하기!!
+                var classes = "";
+                switch (date.getDay()) {
+                    case 0: // is sunday?
+                        classes = 'text-navy'
+                        break;
+                    case 6: // is saturday?
+                        classes = 'text-success'
+                        break;
+                }
+
+                var dd = date.getDate();
+                var mm = date.getMonth() + 1;
+                var yyyy = date.getFullYear();
+
+                mm = (mm < 10) ? '0' + mm : '' + mm;
+                dd = (dd < 10) ? '0' + dd : '' + dd;
+
+                var yyyymmdd = yyyy + "" + mm + "" + dd;
+                var mmdd = mm + "" + dd;
+
+                /*
+                 * luckshim 2022.08.24
+                 *  1	대학내일
+                    2	내일신문
+                    3	51퍼센트
+                    4	NPR
+                    72	미사용부서
+                    73	리서치팩토리
+                    106	NHR
+                    123	오오비컴퍼니
+                    129	오늘은
+                    179	제이피에스컴퍼니
+                 * 회사생일 (DB 에 없다!!!)
+                 * - 대학내일(1) : 09월 06일
+                 * - NHR(106) : 01월 02일
+                 * NHR(106) 직원들은 9월6일때 일반근무처리 || NHR(106) 아닌 다른 계열사는 1월2일때 일반근무 처리
+                 */
+                if ((rootDeptID == "106" && mmdd == "0906") || (rootDeptID != "106" && mmdd == "0102")) {
+                    switch (date.getDay()) {
+                        case 0: // is sunday?
+                            classes = 'text-navy'
+                            break;
+                        case 6: // is saturday?
+                            classes = 'text-success'
+                            break;
+                    }
+                    return classes;
+                }
+                else {
+                    for (var key in result) {
+                        //회사공휴일은 DB 에 없다!!!
+                        if (result[key].Key == yyyymmdd) {
+                            switch (date.getDay()) {
+                                case 0: // is sunday?
+                                    classes = 'text-navy'
+                                    break;
+                                case 6: // is saturday?
+                                    classes = 'text-success'
+                                    break;
+                                default:
+                                    classes = 'text-navy'
+                                    break;
+                            }
+
+                            return classes;
+                        }
+                    }
+                }
+
+                return classes;
+            }
+        });
+    }, "json");
+}
